@@ -15,3 +15,5 @@ checkpoints/ssd_300_vgg.ckpt.index
 
 logs/
 *.log
+
+*.pyc
