@@ -33,9 +33,8 @@ from collections import namedtuple
 
 import numpy as np
 import tensorflow as tf
-
-from nets import custom_layers
-from nets import ssd_common
+from . import custom_layers
+from . import ssd_common
 
 slim = tf.contrib.slim
 

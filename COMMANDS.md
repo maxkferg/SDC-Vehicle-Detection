@@ -3,8 +3,9 @@
 # =========================================================================== #
 rm events* graph* model* checkpoint
 mv events* graph* model* checkpoint ./log
+tensorboard --logdir=logs/ssd_300_voc
 
-DATASET_DIR=/media/paul/DataExt4/KITTI/rawdata/training
+DATASET_DIR=/Users/maxkferg/Onedrive/Stanford/data
 OUTPUT_DIR=/media/paul/DataExt4/KITTI/dataset
 python tf_convert_data.py \
     --dataset_name=kitti \
@@ -12,11 +13,50 @@ python tf_convert_data.py \
     --output_name=kitti_train \
     --output_dir=${OUTPUT_DIR}
 
+# =========================================================================== #
+# VGG-based SSD network [MAX July 4th]
+# =========================================================================== #
+
+DATASET_DIR=/Users/maxkferg/Onedrive/Stanford/PhD/data/VOC2007/
+OUTPUT_DIR=/Users/maxkferg/Onedrive/Stanford/PhD/data/VOC2007-SSD/
+python tf_convert_data.py \
+    --dataset_name=pascalvoc \
+    --dataset_dir=${DATASET_DIR} \
+    --output_name=pascalvoc_2007_train \
+    --output_dir=${OUTPUT_DIR}
+
+
 CAFFE_MODEL=/media/paul/DataExt4/PascalVOC/training/ckpts/SSD_300x300_ft/ssd_300_vgg.caffemodel
 python caffe_to_tensorflow.py \
     --model_name=ssd_300_vgg_caffe \
     --num_classes=21 \
     --caffemodel_path=${CAFFE_MODEL}
+
+# =========================================================================== #
+# VGG-based SSD network [MAX July 4th]
+# =========================================================================== #
+DATASET_DIR=/Users/maxkferg/Onedrive/Stanford/PhD/data/VOC2007-SSD/
+TRAIN_DIR=./logs/ssd_300_voc
+CHECKPOINT_PATH=./checkpoints/ssd_300_vgg.ckpt
+
+python3 train_ssd_network.py \
+    --train_dir=${TRAIN_DIR} \
+    --dataset_dir=${DATASET_DIR} \
+    --checkpoint_path=${CHECKPOINT_PATH} \
+    --checkpoint_exclude_scopes=ssd_300_vgg/block4_box,ssd_300_vgg/block7_box,ssd_300_vgg/block8_box,ssd_300_vgg/block9_box,ssd_300_vgg/block10_box,ssd_300_vgg/block11_box \
+    --dataset_name=pascalvoc_2007 \
+    --dataset_split_name=train \
+    --model_name=ssd_300_vgg \
+    --save_summaries_secs=60 \
+    --save_interval_secs=60 \
+    --weight_decay=0.0005 \
+    --optimizer=adam \
+    --learning_rate=0.000001 \
+    --batch_size=32 \
+    --checkpoint_path=${CHECKPOINT_PATH} \
+    --checkpoint_exclude_scopes=ssd_300_vgg/block4_box,ssd_300_vgg/block7_box,ssd_300_vgg/block8_box,ssd_300_vgg/block9_box,ssd_300_vgg/block10_box,ssd_300_vgg/block11_box \
+
+
 
 # =========================================================================== #
 # VGG-based SSD network

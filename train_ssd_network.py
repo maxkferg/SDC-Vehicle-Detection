@@ -57,9 +57,8 @@ tf.app.flags.DEFINE_integer(
 tf.app.flags.DEFINE_float(
     'weight_decay', 0.00004, 'The weight decay on the model weights.')
 tf.app.flags.DEFINE_string(
-    'optimizer', 'rmsprop',
-    'The name of the optimizer, one of "adadelta", "adagrad", "adam",'
-    '"ftrl", "momentum", "sgd" or "rmsprop".')
+    'optimizer', 'adam',
+    'The name of the optimizer, one of "adadelta", "adagrad", "adam", "ftrl", "momentum", "sgd" or "rmsprop".')
 tf.app.flags.DEFINE_float(
     'adadelta_rho', 0.95,
     'The decay rate for adadelta.')
@@ -73,8 +72,7 @@ tf.app.flags.DEFINE_float(
     'adam_beta2', 0.999,
     'The exponential decay rate for the 2nd moment estimates.')
 tf.app.flags.DEFINE_float('opt_epsilon', 1.0, 'Epsilon term for the optimizer.')
-tf.app.flags.DEFINE_float('ftrl_learning_rate_power', -0.5,
-                          'The learning rate power.')
+tf.app.flags.DEFINE_float('ftrl_learning_rate_power', -0.5, 'The learning rate power.')
 tf.app.flags.DEFINE_float(
     'ftrl_initial_accumulator_value', 0.1,
     'Starting value for the FTRL accumulators.')
@@ -499,12 +497,10 @@ def main(_):
         summaries.add(tf.summary.scalar('total_loss', total_loss))
 
         # Create gradient updates.
-        grad_updates = optimizer.apply_gradients(clones_gradients,
-                                                 global_step=global_step)
+        grad_updates = optimizer.apply_gradients(clones_gradients,global_step=global_step)
         update_ops.append(grad_updates)
         update_op = tf.group(*update_ops)
-        train_tensor = control_flow_ops.with_dependencies([update_op], total_loss,
-                                                          name='train_op')
+        train_tensor = control_flow_ops.with_dependencies([update_op], total_loss, name='train_op')
 
         # Add the summaries from the first clone. These contain the summaries
         summaries |= set(tf.get_collection(tf.GraphKeys.SUMMARIES,
@@ -520,6 +516,7 @@ def main(_):
                                keep_checkpoint_every_n_hours=1.0,
                                write_version=2,
                                pad_step_number=False)
+
         slim.learning.train(
             train_tensor,
             logdir=FLAGS.train_dir,
